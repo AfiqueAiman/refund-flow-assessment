@@ -1,0 +1,63 @@
+{
+  "order_id": "ORD-10482",
+  "status": "completed",
+  "currency": "MYR",
+  "delivery_fee": 5.0,
+  "delivery_fee_status": "paid",
+  "items": [
+    {
+      "line_id": "L1",
+      "name": "Iced Spanish Latte",
+      "unit_price": 13.9,
+      "units": [
+        {
+          "unit_id": "L1-1",
+          "status": "refunded",
+          "addons": [
+            { "addon_id": "A1", "name": "Extra Shot", "unit_price": 2.0, "status": "refunded" }
+          ]
+        },
+        {
+          "unit_id": "L1-2",
+          "status": "paid",
+          "addons": [
+            { "addon_id": "A1", "name": "Extra Shot", "unit_price": 2.0, "status": "paid" }
+          ]
+        }
+      ]
+    },
+    {
+      "line_id": "L2",
+      "name": "Hazelnut Americano with Oat Milk and Brown Sugar Syrup",
+      "unit_price": 11.9,
+      "units": [
+        {
+          "unit_id": "L2-1",
+          "status": "paid",
+          "addons": [
+            { "addon_id": "A2", "name": "Oat Milk", "unit_price": 1.5, "status": "paid" },
+            { "addon_id": "A3", "name": "Brown Sugar Syrup", "unit_price": 1.0, "status": "paid" }
+          ]
+        },
+        {
+          "unit_id": "L2-2",
+          "status": "refunded",
+          "addons": [
+            { "addon_id": "A2", "name": "Oat Milk", "unit_price": 1.5, "status": "paid" },
+            { "addon_id": "A3", "name": "Brown Sugar Syrup", "unit_price": 1.0, "status": "paid" }
+          ]
+        }
+      ]
+    },
+    {
+      "line_id": "L3",
+      "name": "Butter Croissant",
+      "unit_price": 7.9,
+      "units": [
+        { "unit_id": "L3-1", "status": "paid", "addons": [] },
+        { "unit_id": "L3-2", "status": "paid", "addons": [] },
+        { "unit_id": "L3-3", "status": "paid", "addons": [] }
+      ]
+    }
+  ]
+}
