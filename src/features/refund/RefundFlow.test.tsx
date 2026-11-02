@@ -42,6 +42,24 @@ describe('refund flow', () => {
     expect(screen.getByRole('button', { name: 'Refund' })).toBeEnabled()
   })
 
+  it('shows the order refund status and disables Refund when nothing is left', async () => {
+    const user = renderOrderPage()
+    expect(await screen.findByText('Partially refunded')).toBeInTheDocument()
+
+    const modal = await openRefundModal(user)
+    await user.click(within(modal).getByRole('checkbox', { name: 'Select all refundable items' }))
+    await user.click(within(modal).getByRole('checkbox', { name: 'Refund delivery fee' }))
+    await user.click(within(modal).getByRole('button', { name: 'Next' }))
+    const confirm = await fillDetailsAndConfirm(user, modal)
+    await user.click(within(confirm).getByRole('button', { name: 'Confirm refund' }))
+    await screen.findByText(/refunded .*59\.00/i)
+
+    // L2-2's add-ons were never refunded, so the order is not fully refunded,
+    // but there is nothing left that can be refunded.
+    expect(screen.getByText('Partially refunded')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Refund' })).toBeDisabled()
+  })
+
   it('updates the total live and enforces selection rules', async () => {
     const user = renderOrderPage()
     const modal = await openRefundModal(user)

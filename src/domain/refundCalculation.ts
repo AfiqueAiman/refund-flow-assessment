@@ -223,13 +223,27 @@ export interface OrderTotals {
   itemsTotal: Minor
   deliveryFee: Minor
   orderTotal: Minor
+  refundedAmount: Minor
   refundableRemaining: Minor
+  refundStatus: OrderRefundStatus
 }
+
+/**
+ * Based on money returned, not on what can still be refunded: an order whose
+ * add-ons were left out of a drink refund stays `partial` even when nothing more
+ * can be refunded, because the customer didn't get that money back.
+ */
+export type OrderRefundStatus = 'none' | 'partial' | 'full'
 
 export function calculateOrderTotals(order: Order): OrderTotals {
   const units = allUnits(order)
   const itemsTotal = sum(units.map((u) => u.price + sum(u.addons.map((a) => a.price))))
   const deliveryFee = order.deliveryFee?.amount ?? 0
+  const orderTotal = itemsTotal + deliveryFee
+  const refundedAmount =
+    sum(units.filter((u) => u.status === 'refunded').map((u) => u.price)) +
+    sum(units.flatMap((u) => u.addons.filter((a) => a.status === 'refunded').map((a) => a.price))) +
+    (order.deliveryFee?.status === 'refunded' ? deliveryFee : 0)
   const remaining = calculateRefund(order, {
     ...selectAllItems(order, emptySelection()),
     includeDeliveryFee: true,
@@ -237,10 +251,16 @@ export function calculateOrderTotals(order: Order): OrderTotals {
   return {
     itemsTotal,
     deliveryFee,
-    orderTotal: itemsTotal + deliveryFee,
+    orderTotal,
+    refundedAmount,
     refundableRemaining: remaining,
+    refundStatus: refundedAmount === 0 ? 'none' : refundedAmount >= orderTotal ? 'full' : 'partial',
   }
 }
+
+/** Paid add-ons that can no longer be refunded because their drink was refunded without them. */
+export const hasLockedAddons = (order: Order) =>
+  allUnits(order).some((u) => u.addons.some((a) => addonRefundState(u, a) === 'locked'))
 
 function sum(values: Minor[]): Minor {
   return values.reduce((acc, v) => acc + v, 0)

@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography'
 import type { ReactNode } from 'react'
 import { formatList } from '../../components/format'
 import { Money } from '../../components/Money'
-import { AddonStatusChip } from '../../components/StatusChip'
+import { AddonStatusChip, StatusChip } from '../../components/StatusChip'
 import {
   addonKey,
   addonRefundState,
@@ -111,7 +111,7 @@ export function SelectItemsStep({
                     }
                     trailing={
                       <>
-                        {!unitRefundable && <RefundedChip />}
+                        {!unitRefundable && <StatusChip status="refunded" />}
                         <Money
                           amount={unit.price}
                           currency={currency}
@@ -196,7 +196,7 @@ export function SelectItemsStep({
               }
               trailing={
                 <>
-                  {!feeRefundable && <RefundedChip />}
+                  {!feeRefundable && <StatusChip status="refunded" />}
                   <Money
                     amount={order.deliveryFee.amount}
                     currency={currency}
@@ -210,10 +210,6 @@ export function SelectItemsStep({
       )}
     </Stack>
   )
-}
-
-function RefundedChip({ label = 'Refunded' }: { label?: string }) {
-  return <Chip size="small" label={label} sx={{ bgcolor: 'grey.200', color: 'text.secondary' }} />
 }
 
 interface RowProps {
@@ -251,7 +247,6 @@ function SelectableRow({
         minHeight: dense ? 40 : 48,
         borderRadius: 2,
         cursor: disabled ? 'default' : 'pointer',
-        opacity: disabled ? 0.6 : 1,
         ...sx,
       }}
     >
@@ -263,7 +258,8 @@ function SelectableRow({
         size={dense ? 'small' : 'medium'}
         slotProps={{ input: { 'aria-label': ariaLabel } }}
       />
-      <Box sx={{ flex: 1, minWidth: 0 }}>{label}</Box>
+      {/* Only the label is dimmed, so status chips keep their full colour. */}
+      <Box sx={{ flex: 1, minWidth: 0, opacity: disabled ? 0.6 : 1 }}>{label}</Box>
       {trailing && (
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           {trailing}

@@ -42,7 +42,8 @@ export function OrderItemsList({ order }: { order: Order }) {
                     py: 1.25,
                     borderRadius: 2,
                     bgcolor: refunded ? 'grey.50' : 'primary.light',
-                    opacity: refunded ? 0.75 : 1,
+                    // Mute text rather than the whole row, so status chips keep their colour.
+                    color: refunded ? 'text.secondary' : 'text.primary',
                   }}
                 >
                   <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>

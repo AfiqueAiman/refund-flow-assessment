@@ -180,6 +180,8 @@ How the amount staff see is kept equal to the amount refunded:
 - **The reason "Other" requires a short note.** For other reasons the note is optional. Without it, "Other" tells finance and operations nothing.
 - **Channel descriptions** ("may take a few business days", "added immediately") are placeholder copy and need confirming.
 - **Clicking outside the modal doesn't close it,** so a half-finished refund isn't lost by accident. Escape, Cancel and the close button still close it.
+- **The order's refund status** (No refunds / Partially refunded / Fully refunded) is based on money refunded compared with the order total, not on whether anything is left to refund. An order whose only remaining items are locked add-ons stays "Partially refunded", because the customer didn't get that money back. In that case the Refund button is disabled and its tooltip explains why. The order's own `status` ("Completed") is shown separately, as the fulfilment status.
+- **Status colours:** green for paid, grey for refunded, blue for partially refunded, and amber only for locked add-ons, the one case that needs attention. Each chip also has an icon, so the meaning doesn't depend on colour alone.
 
 **Questions**
 
@@ -187,7 +189,7 @@ How the amount staff see is kept equal to the amount refunded:
 2. Are there limits per channel? For example, original-payment refunds only within N days of the order, or a maximum amount without manager approval.
 3. Which roles can refund, and is approval needed above some amount? Should the order page show refund history (who, when, why, how much)?
 4. Should refunds be partial *amounts* (e.g. 50% for a quality issue), or only whole items as specified?
-5. How should the order status change after a full refund (`refunded` / `partially_refunded`)? Is the customer notified automatically?
+5. Should the backend own a refund status on the order (e.g. `refund_status: none | partial | full`)? For now the UI works it out from the item statuses (see below). Other systems such as finance and support tools should see the same value. Is the customer notified automatically?
 6. Tax and rounding rules per country. Do refunds need to show tax separately in some markets?
 7. Do we need to support several orders at once, or are bulk refunds out of scope?
 

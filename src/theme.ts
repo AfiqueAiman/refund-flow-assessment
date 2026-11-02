@@ -16,6 +16,17 @@ export const brand = {
   grey: '#8C8C90',
 } as const
 
+/**
+ * Payment status colours. Text on each background meets WCAG AA (4.5:1).
+ * Amber is reserved for the state that needs attention.
+ */
+export const statusColors = {
+  paid: { bg: '#E3F4EA', fg: '#1B6B3A' },
+  partial: { bg: '#E6ECFA', fg: '#2B3A7E' },
+  refunded: { bg: '#ECEDF1', fg: '#4A5060' },
+  locked: { bg: '#FFF4E0', fg: '#8A4B00', border: '#F0B65A' },
+} as const
+
 export const theme = createTheme({
   palette: {
     primary: { main: brand.blue, dark: brand.blueDark, light: brand.ice, contrastText: '#FFFFFF' },

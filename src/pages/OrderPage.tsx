@@ -13,9 +13,13 @@ import Typography from '@mui/material/Typography'
 import { type ReactNode, useCallback, useState } from 'react'
 import type { RefundResult } from '../api/orders'
 import { Money } from '../components/Money'
-import { StatusChip } from '../components/StatusChip'
+import { OrderRefundChip, StatusChip } from '../components/StatusChip'
 import { formatMoney } from '../domain/money'
-import { calculateOrderTotals, hasRefundableItems } from '../domain/refundCalculation'
+import {
+  calculateOrderTotals,
+  hasLockedAddons,
+  hasRefundableItems,
+} from '../domain/refundCalculation'
 import { channelLabel, type Order } from '../domain/types'
 import { OrderItemsList } from '../features/order/OrderItemsList'
 import { useOrder } from '../features/order/useOrder'
@@ -119,7 +123,11 @@ function OrderHeader({
   onRefund: () => void
 }) {
   const canRefund = hasRefundableItems(order)
-  const { refundableRemaining, orderTotal } = calculateOrderTotals(order)
+  const { refundableRemaining, refundedAmount, orderTotal, refundStatus } =
+    calculateOrderTotals(order)
+  const nothingLeftReason = hasLockedAddons(order)
+    ? "Nothing left to refund. Some add-ons were left out of earlier refunds and can't be refunded."
+    : 'Everything on this order has already been refunded.'
 
   return (
     <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, position: 'relative', overflow: 'hidden' }}>
@@ -133,12 +141,26 @@ function OrderHeader({
           <Typography variant="overline" color="text.secondary">
             Order
           </Typography>
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-            <Typography variant="h1">{order.id}</Typography>
-            <Chip size="small" label={capitalize(order.status)} color="primary" />
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+          >
+            <Typography variant="h1" sx={{ mr: 0.5 }}>
+              {order.id}
+            </Typography>
+            <Chip
+              size="small"
+              variant="outlined"
+              color="primary"
+              label={capitalize(order.status)}
+              aria-description="Order status"
+            />
+            <OrderRefundChip status={refundStatus} />
           </Stack>
         </Box>
-        <Tooltip title={canRefund ? '' : 'Everything on this order has already been refunded.'}>
+        <Tooltip title={canRefund ? '' : nothingLeftReason}>
           <span>
             <Button
               variant="contained"
@@ -163,10 +185,13 @@ function OrderHeader({
           value={<Money amount={orderTotal} currency={order.currency} variant="h3" />}
         />
         <Stat
+          label="Refunded"
+          value={<Money amount={refundedAmount} currency={order.currency} variant="h3" />}
+        />
+        <Stat
           label="Refundable"
           value={<Money amount={refundableRemaining} currency={order.currency} variant="h3" />}
         />
-        <Stat label="Currency" value={<Typography variant="h3">{order.currency}</Typography>} />
       </Stack>
     </Paper>
   )

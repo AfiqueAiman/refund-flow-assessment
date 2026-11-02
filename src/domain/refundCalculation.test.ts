@@ -9,6 +9,7 @@ import {
   calculateRefund,
   clearItems,
   emptySelection,
+  hasLockedAddons,
   hasRefundableItems,
   isAddonRefundable,
   isDeliveryFeeRefundable,
@@ -204,13 +205,71 @@ describe('selection rules', () => {
 })
 
 describe('order totals', () => {
-  it('reports the order total and the remaining refundable amount', () => {
+  it('reports the order total, refunded and remaining refundable amounts', () => {
+    // Already refunded: L1-1 (13.90 + Extra Shot 2.00) and L2-2 (11.90; its add-ons were not).
     expect(calculateOrderTotals(sampleOrder())).toEqual({
       itemsTotal: 8430,
       deliveryFee: 500,
       orderTotal: 8930,
+      refundedAmount: 1390 + 200 + 1190,
       refundableRemaining: 5900,
+      refundStatus: 'partial',
     })
+  })
+
+  const refundEverything = (dto = seedOrderDto()) => {
+    dto.items.forEach((line) =>
+      line.units.forEach((u) => {
+        u.status = 'refunded'
+        u.addons.forEach((a) => (a.status = 'refunded'))
+      }),
+    )
+    dto.delivery_fee_status = 'refunded'
+    return dto
+  }
+
+  it('is "none" when nothing has been refunded', () => {
+    const dto = seedOrderDto()
+    dto.items.forEach((line) =>
+      line.units.forEach((u) => {
+        u.status = 'paid'
+        u.addons.forEach((a) => (a.status = 'paid'))
+      }),
+    )
+    expect(calculateOrderTotals(toOrder(dto))).toMatchObject({
+      refundedAmount: 0,
+      refundStatus: 'none',
+    })
+  })
+
+  it('is "full" when every item, add-on and the delivery fee are refunded', () => {
+    expect(calculateOrderTotals(toOrder(refundEverything()))).toMatchObject({
+      refundedAmount: 8930,
+      refundableRemaining: 0,
+      refundStatus: 'full',
+    })
+  })
+
+  it('is "partial" while the delivery fee is still unrefunded', () => {
+    const dto = refundEverything()
+    dto.delivery_fee_status = 'paid'
+    expect(calculateOrderTotals(toOrder(dto))).toMatchObject({
+      refundableRemaining: 500,
+      refundStatus: 'partial',
+    })
+  })
+
+  it('stays "partial" when only locked add-ons remain, though nothing is refundable', () => {
+    const dto = refundEverything()
+    dto.items[1]!.units[1]!.addons.forEach((a) => (a.status = 'paid')) // L2-2 as in the sample
+    const order = toOrder(dto)
+    expect(calculateOrderTotals(order)).toMatchObject({
+      refundableRemaining: 0,
+      refundStatus: 'partial',
+    })
+    expect(hasRefundableItems(order)).toBe(false)
+    expect(hasLockedAddons(order)).toBe(true)
+    expect(hasLockedAddons(toOrder(refundEverything()))).toBe(false)
   })
 
   it('reports whether anything is left to refund', () => {
