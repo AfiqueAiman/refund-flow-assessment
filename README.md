@@ -2,7 +2,7 @@
 
 The order page and refund flow for the ZUS back office (Regional Senior Frontend Developer technical assessment).
 
-**Live demo:** _link to be added after deployment_
+**Live demo:** https://refund-flow-assessment.vercel.app/
 
 Staff open an order, click **Refund**, and go through two steps in one modal:
 
@@ -220,6 +220,16 @@ How the amount staff see is kept equal to the amount refunded:
 - **Bundle size** is about 570 kB minified (about 176 kB gzipped) for the app chunk, mostly React and MUI. The mock is lazy-loaded separately. With more time I'd look at code-splitting and the bundle.
 - **Testing.** There are unit and component tests, but no end-to-end tests in a real browser yet. Next I'd add Playwright for the main flow at desktop and tablet sizes, plus an accessibility check (axe).
 - **Escape with a selection in progress** closes the modal without asking. Depending on staff feedback, a "discard this refund?" prompt might be worth adding.
+- **Refactoring for a shared codebase.** These are the specific changes I'd make before more people work on it:
+  - Move the generic pieces into `components/` so other back-office features can reuse them: the selectable row, the summary rows and the refund total. `SelectItemsStep` and `ReviewStep` would then only lay things out.
+  - Generate the API types from an OpenAPI spec shared with the backend, instead of the hand-written `contracts.ts`, so the frontend and backend can't drift apart.
+  - Move UI text into translation files (see English only above).
+  - Add Storybook stories for the steps and their states (loading, error, conflict, add-on warning), so design and QA can review them without clicking through the flow.
+- **Team git workflow.** This repo has a short, linear history because it's a solo, time-boxed assessment. On a team I'd follow the team's branching model. For example:
+  - Feature branches off `develop`.
+  - Pull requests that need a review, plus CI checks (lint, typecheck, tests and build) to pass before merging.
+  - A Vercel preview deployment for each pull request, for QA and product sign-off.
+  - Merge into `develop` to deploy to staging, then release `develop` into `master` to deploy to production, with both branches protected.
 
 ---
 
