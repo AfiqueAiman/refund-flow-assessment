@@ -16,6 +16,8 @@ Staff open an order, click **Refund**, and go through two steps in one modal:
 Requires Node 22.12 or newer (Vitest and MSW need it).
 
 ```bash
+git clone https://github.com/AfiqueAiman/refund-flow-assessment.git
+cd refund-flow-assessment
 npm install
 npm run dev        # http://localhost:5173
 ```
