@@ -15,15 +15,12 @@ import type { RefundResult } from '../api/orders'
 import { Money } from '../components/Money'
 import { OrderRefundChip, StatusChip } from '../components/StatusChip'
 import { formatMoney } from '../domain/money'
-import {
-  calculateOrderTotals,
-  hasLockedAddons,
-  hasRefundableItems,
-} from '../domain/refundCalculation'
+import { calculateOrderTotals, hasRefundableItems } from '../domain/refundCalculation'
 import { channelLabel, type Order } from '../domain/types'
 import { OrderItemsList } from '../features/order/OrderItemsList'
 import { useOrder } from '../features/order/useOrder'
 import { RefundModal } from '../features/refund/RefundModal'
+import { statusColors } from '../theme'
 
 export function OrderPage({ orderId }: { orderId: string }) {
   const { state, refresh, replaceOrder } = useOrder(orderId)
@@ -123,11 +120,12 @@ function OrderHeader({
   onRefund: () => void
 }) {
   const canRefund = hasRefundableItems(order)
-  const { refundableRemaining, refundedAmount, orderTotal, refundStatus } =
+  const { refundableRemaining, refundedAmount, orderTotal, refundStatus, lockedAmount } =
     calculateOrderTotals(order)
-  const nothingLeftReason = hasLockedAddons(order)
-    ? "Nothing left to refund. Some add-ons were left out of earlier refunds and can't be refunded."
-    : 'Everything on this order has already been refunded.'
+  const nothingLeftReason =
+    lockedAmount > 0
+      ? "Nothing left to refund. Some add-ons were left out of earlier refunds and can't be refunded."
+      : 'Everything on this order has already been refunded.'
 
   return (
     <Paper elevation={1} sx={{ p: { xs: 2, sm: 3 }, position: 'relative', overflow: 'hidden' }}>
@@ -193,6 +191,24 @@ function OrderHeader({
           value={<Money amount={refundableRemaining} currency={order.currency} variant="h3" />}
         />
       </Stack>
+
+      {lockedAmount > 0 && (
+        <Alert
+          severity="warning"
+          sx={{
+            mt: 2,
+            py: 0.25,
+            bgcolor: statusColors.locked.bg,
+            color: statusColors.locked.fg,
+            border: 1,
+            borderColor: statusColors.locked.border,
+            '& .MuiAlert-icon': { color: 'inherit' },
+          }}
+        >
+          <strong className="tabular-nums">{formatMoney(lockedAmount, order.currency)}</strong> in
+          add-ons can't be refunded: their drinks were refunded without them.
+        </Alert>
+      )}
     </Paper>
   )
 }

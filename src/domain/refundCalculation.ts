@@ -225,6 +225,8 @@ export interface OrderTotals {
   orderTotal: Minor
   refundedAmount: Minor
   refundableRemaining: Minor
+  /** Paid add-ons that can no longer be refunded because their drink was refunded without them. */
+  lockedAmount: Minor
   refundStatus: OrderRefundStatus
 }
 
@@ -254,13 +256,14 @@ export function calculateOrderTotals(order: Order): OrderTotals {
     orderTotal,
     refundedAmount,
     refundableRemaining: remaining,
+    lockedAmount: sum(
+      units.flatMap((u) =>
+        u.addons.filter((a) => addonRefundState(u, a) === 'locked').map((a) => a.price),
+      ),
+    ),
     refundStatus: refundedAmount === 0 ? 'none' : refundedAmount >= orderTotal ? 'full' : 'partial',
   }
 }
-
-/** Paid add-ons that can no longer be refunded because their drink was refunded without them. */
-export const hasLockedAddons = (order: Order) =>
-  allUnits(order).some((u) => u.addons.some((a) => addonRefundState(u, a) === 'locked'))
 
 function sum(values: Minor[]): Minor {
   return values.reduce((acc, v) => acc + v, 0)

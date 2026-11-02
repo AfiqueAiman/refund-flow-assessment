@@ -9,7 +9,6 @@ import {
   calculateRefund,
   clearItems,
   emptySelection,
-  hasLockedAddons,
   hasRefundableItems,
   isAddonRefundable,
   isDeliveryFeeRefundable,
@@ -213,6 +212,7 @@ describe('order totals', () => {
       orderTotal: 8930,
       refundedAmount: 1390 + 200 + 1190,
       refundableRemaining: 5900,
+      lockedAmount: 150 + 100, // L2-2's Oat Milk and Brown Sugar Syrup
       refundStatus: 'partial',
     })
   })
@@ -264,12 +264,13 @@ describe('order totals', () => {
     dto.items[1]!.units[1]!.addons.forEach((a) => (a.status = 'paid')) // L2-2 as in the sample
     const order = toOrder(dto)
     expect(calculateOrderTotals(order)).toMatchObject({
+      refundedAmount: 8930 - 250,
       refundableRemaining: 0,
+      lockedAmount: 250,
       refundStatus: 'partial',
     })
     expect(hasRefundableItems(order)).toBe(false)
-    expect(hasLockedAddons(order)).toBe(true)
-    expect(hasLockedAddons(toOrder(refundEverything()))).toBe(false)
+    expect(calculateOrderTotals(toOrder(refundEverything())).lockedAmount).toBe(0)
   })
 
   it('reports whether anything is left to refund', () => {

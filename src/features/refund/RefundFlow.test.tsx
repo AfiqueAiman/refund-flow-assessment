@@ -45,6 +45,10 @@ describe('refund flow', () => {
   it('shows the order refund status and disables Refund when nothing is left', async () => {
     const user = renderOrderPage()
     expect(await screen.findByText('Partially refunded')).toBeInTheDocument()
+    // L2-2's add-ons are locked from the start, so staff see why up front.
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      /2\.50 in add-ons can't be refunded: their drinks were refunded without them/i,
+    )
 
     const modal = await openRefundModal(user)
     await user.click(within(modal).getByRole('checkbox', { name: 'Select all refundable items' }))
